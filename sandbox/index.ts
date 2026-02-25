@@ -2,14 +2,24 @@ import 'dotenv/config';
 import { client } from '../src/services/redis';
 
 const run = async () => {
-	await client.del('car'); // Delete the old key first
-	await client.hSet('car', {
+	await client.hSet('car1', {
+		color: 'red',
+		year: 1940
+	});
+	await client.hSet('car2', {
 		color: 'red',
 		year: 1950
 	});
+	await client.hSet('car3', {
+		color: 'red',
+		year: 1960
+	});
+	const result = await Promise.all([
+		client.hGetAll('car1'),
+		client.hGetAll('car2'),
+		client.hGetAll('car3')
+	]);
 
-	const car = await client.hGetAll('car');
-
-	console.log(car);
+	console.log(result);
 };
 run();
