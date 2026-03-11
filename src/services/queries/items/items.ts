@@ -2,7 +2,7 @@ import type { CreateItemAttrs } from '$services/types';
 import { client } from '$services/redis';
 import { serialize } from './serialize';
 import { genId } from '$services/utils';
-import { itemsKey } from '$services/keys';
+import { itemsKey, itemsByViewsKey, itemsByEndingAtKey } from '$services/keys';
 import { deserialize } from './deserialize';
 
 export const getItem = async (id: string) => {
@@ -20,6 +20,13 @@ export const getItems = async (ids: string[]) => {
 export const createItem = async (attrs: CreateItemAttrs, userId: string) => {
 	const id = genId();
 	const serialized = serialize(attrs);
-	await client.hSet(itemsKey(id), serialized);
+
+	await Promise.all([
+		client.hSet(itemsKey(id), serialized),
+		//새로운 아이템을 생성할 때 조회수 정렬에 추가
+		client.zAdd(itemsByViewsKey(), { score: 0, value: id })
+	]);
+	//새로운 아이템을 생성할 때 종료 시간 정렬에 추가
+	await client.zAdd(itemsByEndingAtKey(), { score: attrs.endingAt.toMillis(), value: id });
 	return id;
 };
