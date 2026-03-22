@@ -15,6 +15,8 @@ export const itemsByViews = async (order: 'DESC' | 'ASC' = 'DESC', offset = 0, c
 		DIRECTION: order,
 		LIMIT: { offset, count }
 	});
+	console.log('result', result);
+
 	const items = [];
 	while (result.length) {
 		const [id, name, views, endingAt, imageUrl, price, ...rest] = result;
